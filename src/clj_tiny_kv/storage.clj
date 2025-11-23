@@ -7,11 +7,18 @@
   {:status :ok})
 
 (defn kv-get [k]
-  (get @store k))
+  (let [v (get @store k)]
+    (if (nil? v)
+      {:status :not-found}
+      {:status :ok
+       :value  v})))
 
 (defn kv-delete! [k]
-  (swap! store dissoc k)
-  {:status :ok})
+  (let [exists? (contains? @store k)]
+    (swap! store dissoc k)
+    (if exists?
+      {:status :deleted}
+      {:status :not-found})))
 
-(defn kv-dump! []
+(defn kv-dump []
   @store)
