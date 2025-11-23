@@ -1,6 +1,6 @@
 (ns clj-tiny-kv.storage)
 
-(def store (atom {}))
+(defonce store (atom {}))
 
 (defn kv-put! [k v]
   (swap! store assoc k v)
