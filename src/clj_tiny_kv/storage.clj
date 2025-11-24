@@ -3,15 +3,13 @@
 (defonce store (atom {}))
 
 (defn kv-put! [k v]
-  (swap! store assoc k v)
+  (swap! store assoc k {:exists? true :value v})
   {:status :ok})
 
 (defn kv-get [k]
-  (let [v (get @store k)]
-    (if (nil? v)
-      {:status :not-found}
-      {:status :ok
-       :value  v})))
+  (if-let [v (get @store k)]
+    {:status :ok :value (:value v)}
+    {:status :not-found}))
 
 (defn kv-delete! [k]
   (let [exists? (contains? @store k)]
