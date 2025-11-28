@@ -1,6 +1,5 @@
 (ns clj-tiny-kv.handlers
   (:require
-   [clj-tiny-kv.storage :as storage]
    [cheshire.core :as json]))
 
 (defn make-response [status body]
@@ -9,9 +8,10 @@
    :body (json/encode body)})
 
 (defn get-handler [request]
-  (let [key (get-in request [:path-params :key])]
+  (let [storage (:storage request)
+        key (get-in request [:path-params :key])]
     (try
-      (let [result (storage/kv-get key)
+      (let [result (.get-value storage key)
             status (:status result)]
         (case status
           :ok
@@ -24,12 +24,12 @@
                             :message (.getMessage e)})))))
 (defn put-handler
   [request]
-  (let [key (get-in request [:path-params :key])
+  (let [storage (:storage request)
+        key (get-in request [:path-params :key])
         body (slurp (:body request))]
     (try
-      (let [data (json/decode body true)
-            value (:value data)]
-        (storage/kv-put! key value)
+      (let [value (:value (json/decode body true))]
+        (.put! storage key value)
         (make-response 201 {:status "created"
                             :key key
                             :value value}))
@@ -38,9 +38,10 @@
                             :message (.getMessage e)})))))
 
 (defn delete-handler [request]
-  (let [key (get-in request [:path-params :key])
-        result (storage/kv-delete! key)]
-    (case (:status result)
+  (let [storage (:storage request)
+        key (get-in request [:path-params :key])
+        status (:status (.delete! storage key))]
+    (case (status)
       :deleted (make-response 200 {:status "deleted"
                                    :key key})
       :not-found (make-response 404 {:status "not-found"}))))

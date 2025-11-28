@@ -13,10 +13,7 @@
 
    {:data {:middleware [ex/exception-middleware]}}))
 
-(def app
-  (ring/ring-handler
-   router
-
-   (ring/create-default-handler
-    {:not-found handlers/not-found-handler
-     :method-not-allowed handlers/method-not-allowed-handler})))
+(def default-handler
+  (ring/create-default-handler
+   {:not-found handlers/not-found-handler
+    :method-not-allowed handlers/method-not-allowed-handler}))

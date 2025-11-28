@@ -1,7 +1,5 @@
 (ns user
-  (:require [clojure.tools.namespace.repl :as tn]
-            [clj-tiny-kv.storage :as storage]
-            [clojure.repl :as repl]))
+  (:require [clojure.tools.namespace.repl :as tn]))
 
 (tn/set-refresh-dirs "src" "dev")
 
@@ -9,6 +7,6 @@
   (tn/refresh))
 
 (comment
-  (storage/store)
-  (repl/doc storage/store)
+  ;; (storage/store)
+  ;; (repl/doc storage/store)
   (reset))
