@@ -7,6 +7,4 @@
   (tn/refresh))
 
 (comment
-  ;; (storage/store)
-  ;; (repl/doc storage/store)
   (reset))
