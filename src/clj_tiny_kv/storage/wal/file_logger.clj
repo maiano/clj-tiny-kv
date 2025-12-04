@@ -1,11 +1,16 @@
 (ns clj-tiny-kv.storage.wal.file-logger
   (:require [clj-tiny-kv.storage.wal.protocol :refer [TransactionLogger]])
-  (:import (java.io BufferedWriter FileWriter)))
+  (:import (java.io FileOutputStream OutputStreamWriter BufferedWriter)))
 
 (defn open-writer [file]
-  (BufferedWriter. (FileWriter. file true)))
+  (let [fos (FileOutputStream. file true)
+        osw (OutputStreamWriter. fos)
+        bw  (BufferedWriter. osw)]
+    {:writer bw
+     :fos fos}))
 
-(defrecord FileTransactionLogger [file writer seq-counter]
+
+(defrecord FileTransactionLogger [file writer-map seq-counter]
   TransactionLogger
 
   (write-put! [_ key value]
@@ -13,19 +18,24 @@
           event {:seq seq-num
                  :event-type :put
                  :key key
-                 :value value}]
-      (.write writer (str (pr-str event) "\n"))
-      (.flush writer)
-      (.sync (.getFD ^FileWriter (.getOut writer)))
+                 :value value}
+          ^BufferedWriter w (:writer writer-map)
+          ^FileOutputStream fos (:fos writer-map)]
+      (.write w (str (pr-str event) "\n"))
+      (.flush w)
+      (.getFD fos)
+      (.sync (.getFD fos))
       event))
 
   (write-delete! [_ key]
     (let [seq-num (.incrementAndGet seq-counter)
           event {:seq seq-num
                  :event-type :delete
-                 :key key}]
-      (.write writer (str (pr-str event) "\n"))
-      (.flush writer)
-      (.sync (.getFD ^FileWriter (.getOut writer)))
+                 :key key}
+          ^BufferedWriter w (:writer writer-map)
+          ^FileOutputStream fos (:fos writer-map)]
+      (.write w (str (pr-str event) "\n"))
+      (.flush w)
+      (.sync (.getFD fos))
       event)))
 

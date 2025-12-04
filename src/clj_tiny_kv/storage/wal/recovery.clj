@@ -11,7 +11,8 @@
 
 (defn replay-wal [file]
   (with-open [rdr (io/reader file)]
-    (->> rdr
-         line-seq
-         (filter valid-line?)
-         (map edn/read-string))))
+    (doall
+     (for [line (line-seq rdr)
+           :when (valid-line? line)]
+       (edn/read-string line)))))
+
