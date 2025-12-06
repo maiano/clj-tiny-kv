@@ -39,4 +39,6 @@
     @state)
 
   (close! [_this]
+    (when logger
+      (wal-proto/close! logger))
     :ok))

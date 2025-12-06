@@ -23,7 +23,6 @@
           ^FileOutputStream fos (:fos writer-map)]
       (.write w (str (pr-str event) "\n"))
       (.flush w)
-      (.getFD fos)
       (.sync (.getFD fos))
       event))
 
@@ -37,5 +36,12 @@
       (.write w (str (pr-str event) "\n"))
       (.flush w)
       (.sync (.getFD fos))
-      event)))
+      event))
+  (close! [_]
+    (let [^BufferedWriter w (:writer writer-map)
+          ^FileOutputStream fos (:fos writer-map)]
+      (try (.flush w) (catch Exception _))
+      (try (.close w) (catch Exception _))
+      (try (.close fos) (catch Exception _))
+      :ok)))
 
